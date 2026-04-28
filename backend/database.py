@@ -1,0 +1,43 @@
+from sqlalchemy import create_engine, Column, String, Float, DateTime, ForeignKey, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import datetime
+import uuid
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///./truthlens.db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+class UserDB(Base):
+    __tablename__ = "users"
+    username = Column(String, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+
+class HistoryDB(Base):
+    __tablename__ = "history"
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    username = Column(String, ForeignKey("users.username"))
+    input_type = Column(String)
+    input_content = Column(Text)
+    status = Column(String)
+    confidence_score = Column(Float)
+    reasoning = Column(Text)
+    title = Column(String, nullable=True)
+    trust_score = Column(Float, nullable=True)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+def init_db():
+    Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

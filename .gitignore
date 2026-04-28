@@ -1,0 +1,37 @@
+# ========================
+# Python / Backend
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+backend/venv/
+backend/.env
+*.db
+*.sqlite3
+.env
+
+# ========================
+# Node.js / Frontend
+# ========================
+frontend/node_modules/
+frontend/.env
+frontend/dist/
+frontend/.vite/
+
+# ========================
+# General
+# ========================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+.idea/
+.vscode/settings.json
+
+# ========================
+# Model cache (large files)
+# ========================
+.cache/
