@@ -6,11 +6,12 @@ from ai_service import analyze_news
 from reality_engine import reality_engine
 from typing import List, Optional
 import os
-from datetime import datetime
-import uuid
+from datetime import datetime, timedelta
+import httpx
 from database import init_db, get_db, UserDB, HistoryDB
 from sqlalchemy.orm import Session
 import logging
+import json
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
@@ -112,7 +113,7 @@ async def analyze(input_data: NewsInput, current_user: str = Depends(get_current
     else:
         text_to_analyze = input_data.text
 
-    result = await analyze_news(text_to_analyze)
+    result = await analyze_news(text_to_analyze, title=title)
     result.title = title
     
     # Simple trust score simulation
@@ -134,7 +135,8 @@ async def analyze(input_data: NewsInput, current_user: str = Depends(get_current
         confidence_score=result.confidence_score,
         reasoning=result.reasoning,
         title=result.title,
-        trust_score=result.trust_score
+        trust_score=result.trust_score,
+        search_references=json.dumps(result.search_references) if result.search_references else None
     )
     db.add(history_item)
     db.commit()
@@ -196,7 +198,8 @@ async def get_history(current_user: str = Depends(get_current_user), db: Session
                 "confidence_score": item.confidence_score,
                 "reasoning": item.reasoning,
                 "title": item.title,
-                "trust_score": item.trust_score
+                "trust_score": item.trust_score,
+                "search_references": json.loads(item.search_references) if item.search_references else None
             },
             "timestamp": item.timestamp
         })
@@ -234,8 +237,6 @@ news_cache = {
 
 @app.get("/news")
 async def get_real_news(category: str = "technology"):
-    import httpx
-    from datetime import datetime, timedelta
     
     # Simple Caching Logic (15 minutes)
     now = datetime.now()

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, HttpUrl, Field
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict
 from datetime import datetime
 
 class NewsInput(BaseModel):
@@ -20,6 +20,7 @@ class AnalysisResult(BaseModel):
     author: Optional[str] = None
     source: Optional[str] = None
     trust_score: Optional[float] = None
+    search_references: Optional[List[Dict[str, str]]] = None
 
 class DetailedAnalysis(BaseModel):
     truth_reason: str
@@ -55,6 +56,7 @@ class HistoryResult(BaseModel):
     reasoning: Optional[str] = None
     title: Optional[str] = None
     trust_score: Optional[float] = None
+    search_references: Optional[List[Dict[str, str]]] = None
 
 class HistoryEntry(BaseModel):
     id: str

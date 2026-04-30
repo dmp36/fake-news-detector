@@ -30,6 +30,7 @@ class HistoryDB(Base):
     reasoning = Column(Text)
     title = Column(String, nullable=True)
     trust_score = Column(Float, nullable=True)
+    search_references = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
 def init_db():

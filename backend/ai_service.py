@@ -1,11 +1,12 @@
 import os
 from openai import OpenAI
-from typing import List, Dict
+from typing import List, Dict, Optional
 import json
 from models import AnalysisResult, AnalysisHighlight
 from dotenv import load_dotenv
 from transformers import pipeline
 import torch
+from search_service import search_cross_verify
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ except Exception as e:
     bert_classifier = None
     roberta_classifier = None
 
-async def analyze_news(text: str) -> AnalysisResult:
+async def analyze_news(text: str, title: Optional[str] = None) -> AnalysisResult:
     # 1. Gather ML Votes
     votes = []
     ml_confidences = []
@@ -61,16 +62,26 @@ async def analyze_news(text: str) -> AnalysisResult:
             roberta_label = f"{label} ({res['score']*100:.1f}%)"
         except: pass
 
-    # 2. LLM Reasoning with ML context
+    # 2. Search for cross-verification
+    search_query = title if title else text[:150]
+    search_results = await search_cross_verify(search_query)
+    search_context = "\n".join([f"- {r['title']}: {r['snippet']} ({r['link']})" for r in search_results]) if search_results else "No direct search results found."
+
+    # 3. LLM Reasoning with ML and Search context
     prompt = f"""
     Analyze this news text for authenticity. 
-    We have performed Multi-Model Voting using BERT and RoBERTa.
+    We have performed Multi-Model Voting using BERT and RoBERTa, and gathered live search results for verification.
+    
+    Claim/Title: {title if title else 'Unknown'}
     
     ML Results:
     - BERT: {bert_label}
     - RoBERTa: {roberta_label}
     
-    Text: {text[:4000]}
+    Live Search Verification Context:
+    {search_context}
+    
+    Text Content (Snippet): {text[:3500]}
     
     Return a JSON object:
     {{
@@ -101,7 +112,7 @@ async def analyze_news(text: str) -> AnalysisResult:
             if result_json['status'] == votes[0]:
                 result_json['confidence_score'] = max(result_json['confidence_score'], 92.0)
 
-        return AnalysisResult(**result_json)
+        return AnalysisResult(**result_json, search_references=search_results)
     except Exception as e:
         print(f"GPT Analysis Failed: {e}")
         # Fallback to Majority Vote
@@ -114,7 +125,8 @@ async def analyze_news(text: str) -> AnalysisResult:
                 status=majority,
                 confidence_score=avg_conf,
                 reasoning=f"[ENSEMBLE FALLBACK] Majority vote between BERT and RoBERTa. GPT reasoning unavailable. Models consensus: {majority}.",
-                highlights=[]
+                highlights=[],
+                search_references=search_results
             )
         
         return AnalysisResult(status="MISLEADING", confidence_score=50.0, reasoning="All analysis models failed.", highlights=[])

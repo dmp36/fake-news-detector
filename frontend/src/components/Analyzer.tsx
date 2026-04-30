@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, AlertCircle, CheckCircle2, ShieldAlert, Loader2, Link as LinkIcon, FileText, Share2, Award } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle2, ShieldAlert, Loader2, Link as LinkIcon, FileText, Share2, Award, Globe, ExternalLink } from 'lucide-react';
 import api from '../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,6 +16,7 @@ interface AnalysisResult {
   highlights: Highlight[];
   title?: string;
   trust_score?: number;
+  search_references?: { title: string; link: string; source: string; snippet: string }[];
 }
 
 interface RealityScoreResult {
@@ -71,7 +72,8 @@ const Analyzer: React.FC<AnalyzerProps> = ({ initialUrl }) => {
         setResult(response.data);
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Something went wrong. Please check your backend.');
+      const detail = err.response?.data?.detail;
+      setError(Array.isArray(detail) ? detail[0]?.msg : (detail || 'Something went wrong. Please check your backend.'));
     } finally {
       setLoading(false);
     }
@@ -205,6 +207,32 @@ const Analyzer: React.FC<AnalyzerProps> = ({ initialUrl }) => {
                 </div>
               ))}
             </div>
+            
+            {/* Search References */}
+            {result.search_references && result.search_references.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <Globe size={14} className="text-emerald-500" /> Live Verification Sources
+                </h3>
+                <div className="grid gap-3">
+                  {result.search_references.map((ref, i) => (
+                    <a 
+                      key={i} 
+                      href={ref.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group"
+                    >
+                      <div className="flex-grow">
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter block mb-1">{ref.source}</span>
+                        <h4 className="text-sm font-bold text-white line-clamp-1 group-hover:text-primary transition-colors">{ref.title}</h4>
+                      </div>
+                      <ExternalLink size={16} className="text-slate-600 group-hover:text-white" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 

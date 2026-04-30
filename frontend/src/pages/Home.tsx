@@ -148,7 +148,7 @@ const Home: React.FC = () => {
                     <Zap size={24} />
                   </div>
                   <h3 className="text-xl font-bold text-white">Instant Analysis</h3>
-                  <p className="text-slate-400">Powered by GPT-4 and custom ML models for sub-second classification latency.</p>
+                  <p className="text-slate-400">Powered by GPT-4o and custom ML models for sub-second classification latency.</p>
               </motion.div>
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0 } }}
