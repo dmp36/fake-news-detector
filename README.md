@@ -52,8 +52,9 @@ If GPT-4o is unavailable, the system **auto-falls back** to majority vote betwee
 |---|---|
 | **Frontend** | React 18, TypeScript, Vite, TailwindCSS, Framer Motion |
 | **Backend** | FastAPI, Python 3.11+ |
+| **Deployment** | Vercel (Serverless Functions + Static Hosting) |
 | **AI Models** | BERT (`mrm8488/bert-tiny`), RoBERTa (`hamzab/roberta-fake-news`), OpenAI GPT-4o |
-| **Database** | SQLite via SQLAlchemy |
+| **Database** | SQLite (Local) / External SQL (Recommended for Production) |
 | **Auth** | JWT (python-jose), bcrypt (passlib) |
 | **Scraping** | httpx, BeautifulSoup4, newspaper3k |
 
@@ -72,50 +73,29 @@ git clone https://github.com/dmp36/fake-news-detector.git
 cd fake-news-detector
 ```
 
-### 2. Backend Setup
+### 2. Installation
 ```bash
-cd backend
-python -m venv venv
+# Install frontend dependencies
+npm install
 
-# Windows
-venv\Scripts\activate
-
-# Mac/Linux
-source venv/bin/activate
-
+# Install backend dependencies
 pip install -r requirements.txt
 ```
 
-Create `backend/.env`:
+### 3. Environment Variables
+Create a `.env` file in the root:
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 JWT_SECRET=your_super_secret_jwt_key
-ALLOWED_ORIGINS=http://localhost:5173
+SERPER_API_KEY=your_serper_api_key_here
 ```
 
-### 3. Frontend Setup
+### 4. Run the Project Locally
 ```bash
-cd frontend
-npm install
-```
+# Terminal 1: Backend
+uvicorn api.index:app --reload
 
-Create `frontend/.env`:
-```env
-VITE_API_URL=http://localhost:8000
-```
-
-### 4. Run the Project
-
-**Backend:**
-```bash
-cd backend
-venv\Scripts\activate
-python main.py
-```
-
-**Frontend:**
-```bash
-cd frontend
+# Terminal 2: Frontend
 npm run dev
 ```
 
@@ -126,32 +106,20 @@ Open [http://localhost:5173](http://localhost:5173) 🚀
 ## 📁 Project Structure
 
 ```
-fake-news-detector/
-├── backend/
-│   ├── main.py           # FastAPI app, all routes
-│   ├── ai_service.py     # Multi-Model Voting Ensemble
-│   ├── reality_engine.py # Deep Fact-Check Engine
-│   ├── models.py         # Pydantic schemas
-│   ├── database.py       # SQLAlchemy models + SQLite
-│   ├── scraper.py        # Article scraper
-│   └── requirements.txt
-│
-├── frontend/
-│   └── src/
-│       ├── pages/
-│       │   ├── Home.tsx
-│       │   ├── History.tsx
-│       │   ├── Login.tsx
-│       │   └── Register.tsx
-│       ├── components/
-│       │   ├── Analyzer.tsx    # Main analysis UI
-│       │   ├── NewsFeed.tsx    # Live news with categories
-│       │   ├── Navbar.tsx      # Global navigation
-│       │   ├── Trending.tsx    # Trending fake news
-│       │   └── ErrorBoundary.tsx
-│       └── context/
-│           └── AuthContext.tsx
-│
+truthlens-ai/
+├── api/                  # FastAPI Backend (Vercel Functions)
+│   ├── index.py          # Entry point
+│   ├── ai_service.py     # Ensemble logic
+│   ├── reality_engine.py # Fact-check engine
+│   └── ...
+├── src/                  # React Frontend
+│   ├── components/
+│   ├── pages/
+│   └── context/
+├── public/               # Static assets
+├── vercel.json           # Vercel deployment config
+├── package.json          # Node dependencies
+├── requirements.txt      # Python dependencies
 └── README.md
 ```
 
@@ -161,15 +129,12 @@ fake-news-detector/
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/register` | Create new user |
-| `POST` | `/token` | Login, get JWT token |
-| `POST` | `/analyze` | Analyze article (Ensemble) |
-| `POST` | `/analyze/reality` | Deep Fact-Check |
-| `GET` | `/news?category=technology` | Live news feed |
-| `GET` | `/history` | User's analysis history |
-| `DELETE` | `/history/{id}` | Delete history item |
-| `GET` | `/trending` | Trending fake news |
-| `GET` | `/docs` | Interactive API docs (Swagger) |
+| `POST` | `/api/register` | Create new user |
+| `POST` | `/api/token` | Login, get JWT token |
+| `POST` | `/api/analyze` | Analyze article (Ensemble) |
+| `POST` | `/api/analyze/reality` | Deep Fact-Check |
+| `GET` | `/api/news` | Live news feed |
+| `GET` | `/api/history` | User's analysis history |
 
 ---
 

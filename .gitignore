@@ -1,37 +1,31 @@
-# ========================
-# Python / Backend
-# ========================
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
-backend/venv/
-backend/.env
-*.db
-*.sqlite3
-.env
-
-# ========================
-# Node.js / Frontend
-# ========================
-frontend/node_modules/
-frontend/.env
-frontend/dist/
-frontend/.vite/
-
-# ========================
 # General
-# ========================
 .DS_Store
 Thumbs.db
 *.log
 *.tmp
 *.swp
 .idea/
-.vscode/settings.json
+.vscode/
 
-# ========================
-# Model cache (large files)
-# ========================
+# Python / Backend
+__pycache__/
+api/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.backend.env
+*.db
+*.sqlite3
+
+# Node.js / Frontend
+node_modules/
+.frontend.env
+dist/
+.vite/
+.env
+
+# Model cache
 .cache/
