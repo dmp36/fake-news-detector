@@ -4,28 +4,31 @@ from typing import List, Dict, Optional
 import json
 from models import AnalysisResult, AnalysisHighlight
 from dotenv import load_dotenv
-from transformers import pipeline
-import torch
 from search_service import search_cross_verify
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Initialize Models
-try:
-    print("Loading BERT Fake News Classifier...")
-    bert_classifier = pipeline("text-classification", model="mrm8488/bert-tiny-finetuned-fake-news-detection")
-    
-    print("Loading RoBERTa Fake News Classifier...")
-    # Using a specialized RoBERTa model for fake news
-    roberta_classifier = pipeline("text-classification", model="hamzab/roberta-fake-news-classification")
-    
-    print("All ML Models Loaded.")
-except Exception as e:
-    print(f"Error loading ML models: {e}")
-    bert_classifier = None
-    roberta_classifier = None
+ENABLE_LOCAL_ML = os.getenv("ENABLE_LOCAL_ML", "false").lower() == "true"
+bert_classifier = None
+roberta_classifier = None
+
+if ENABLE_LOCAL_ML:
+    try:
+        from transformers import pipeline
+
+        print("Loading BERT Fake News Classifier...")
+        bert_classifier = pipeline("text-classification", model="mrm8488/bert-tiny-finetuned-fake-news-detection")
+
+        print("Loading RoBERTa Fake News Classifier...")
+        roberta_classifier = pipeline("text-classification", model="hamzab/roberta-fake-news-classification")
+
+        print("All ML Models Loaded.")
+    except Exception as e:
+        print(f"Error loading ML models: {e}")
+        bert_classifier = None
+        roberta_classifier = None
 
 async def analyze_news(text: str, title: Optional[str] = None) -> AnalysisResult:
     # 1. Gather ML Votes
