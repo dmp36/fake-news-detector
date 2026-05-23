@@ -4,7 +4,7 @@ import re
 from typing import Dict, Any
 from openai import OpenAI
 from dotenv import load_dotenv
-from models import RealityScoreResult, DetailedAnalysis
+from .models import RealityScoreResult, DetailedAnalysis
 
 load_dotenv()
 

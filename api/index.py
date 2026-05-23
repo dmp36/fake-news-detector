@@ -1,14 +1,14 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from models import NewsInput, AnalysisResult, RealityScoreResult, HistoryEntry, HistoryResult, UserCreate, Token
-from scraper import scrape_article
-from ai_service import analyze_news
-from reality_engine import reality_engine
+from .models import NewsInput, AnalysisResult, RealityScoreResult, HistoryEntry, HistoryResult, UserCreate, Token
+from .scraper import scrape_article
+from .ai_service import analyze_news
+from .reality_engine import reality_engine
 from typing import List, Optional
 import os
 from datetime import datetime, timedelta
 import httpx
-from database import init_db, get_db, UserDB, HistoryDB
+from .database import init_db, get_db, UserDB, HistoryDB
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 import logging

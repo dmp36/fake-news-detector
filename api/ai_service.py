@@ -2,9 +2,9 @@ import os
 from openai import OpenAI
 from typing import List, Dict, Optional
 import json
-from models import AnalysisResult, AnalysisHighlight
+from .models import AnalysisResult, AnalysisHighlight
 from dotenv import load_dotenv
-from search_service import search_cross_verify
+from .search_service import search_cross_verify
 
 load_dotenv()
 
