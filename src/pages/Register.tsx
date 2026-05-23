@@ -27,7 +27,7 @@ const Register: React.FC = () => {
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
       const detail = err.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : 'Registration failed. Try a different username.');
+      setError(typeof detail === 'string' ? detail : 'Registration failed. Please try again in a moment.');
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import os
 from datetime import datetime, timedelta
 import httpx
 from database import init_db, get_db, UserDB, HistoryDB
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 import logging
 import json
@@ -60,14 +61,28 @@ def verify_password(plain_password, hashed_password):
 
 @app.post("/register")
 async def register(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(UserDB).filter(UserDB.username == user.username).first()
-    if db_user:
+    username = user.username.strip()
+    email = user.email.strip().lower()
+
+    if not username or not email or not user.password:
+        raise HTTPException(status_code=400, detail="Username, email, and password are required")
+
+    existing_username = db.query(UserDB).filter(UserDB.username == username).first()
+    if existing_username:
         raise HTTPException(status_code=400, detail="Username already registered")
+
+    existing_email = db.query(UserDB).filter(UserDB.email == email).first()
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
     
     hashed = get_password_hash(user.password)
-    new_user = UserDB(username=user.username, email=user.email, hashed_password=hashed)
+    new_user = UserDB(username=username, email=email, hashed_password=hashed)
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Username or email already registered")
     return {"message": "User created successfully"}
 
 @app.post("/token")

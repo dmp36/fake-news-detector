@@ -2,13 +2,27 @@ from sqlalchemy import create_engine, Column, String, Float, DateTime, ForeignKe
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
+import os
 import uuid
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./truthlens.db"
+def get_database_url():
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        if database_url.startswith("postgres://"):
+            return database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+        if database_url.startswith("postgresql://"):
+            return database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return database_url
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+    if os.getenv("VERCEL"):
+        return "sqlite:////tmp/truthlens.db"
+
+    return "sqlite:///./truthlens.db"
+
+SQLALCHEMY_DATABASE_URL = get_database_url()
+connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
