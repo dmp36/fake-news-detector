@@ -67,6 +67,9 @@ const Register: React.FC = () => {
                 </Link>
                 <h2 className="text-3xl font-black text-white text-center">Create Account</h2>
                 <p className="text-slate-400 mt-2 text-center">Join TruthLens AI to track truth in real-time</p>
+                <span className="mt-3 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                  Build 2026-05-23
+                </span>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
