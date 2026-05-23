@@ -27,7 +27,13 @@ const Register: React.FC = () => {
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
       const detail = err.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : 'Registration failed. Please try again in a moment.');
+      const status = err.response?.status;
+      const message = typeof detail === 'string'
+        ? detail
+        : status
+          ? `Registration failed with server error ${status}. Check the Vercel Function logs.`
+          : 'Registration failed because the API could not be reached.';
+      setError(message);
     } finally {
       setLoading(false);
     }

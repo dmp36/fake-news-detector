@@ -9,7 +9,7 @@ import os
 from datetime import datetime, timedelta
 import httpx
 from database import init_db, get_db, UserDB, HistoryDB
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 import logging
 import json
@@ -27,6 +27,14 @@ app = FastAPI(title="TruthLens AI API")
 
 # Initialize DB
 init_db()
+
+@app.middleware("http")
+async def strip_api_prefix(request, call_next):
+    if request.scope["path"].startswith("/api/"):
+        request.scope["path"] = request.scope["path"][4:]
+    elif request.scope["path"] == "/api":
+        request.scope["path"] = "/"
+    return await call_next(request)
 
 # Production CORS - Allow specific origins from ENV
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
@@ -83,6 +91,10 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="Username or email already registered")
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Registration database error: %s", exc)
+        raise HTTPException(status_code=503, detail="Registration database is not available. Check DATABASE_URL in Vercel.")
     return {"message": "User created successfully"}
 
 @app.post("/token")
